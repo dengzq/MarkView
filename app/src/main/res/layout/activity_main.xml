@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.dengzq.markview.MarkView
+        android:id="@+id/ticket6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>
