@@ -17,7 +17,7 @@ import java.util.regex.Pattern
  * <p>package   com.dengzq.markview</p>
  * <p>readMe    NumberView</p>
  */
-class NumberView : View {
+internal class NumberView : View {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet)
@@ -35,6 +35,7 @@ class NumberView : View {
     var bgColor: Int = Color.RED
         set(value) {
             field = value
+            bgPaint.color = value
             invalidate()
         }
     var textColor: Int = Color.WHITE
@@ -47,19 +48,20 @@ class NumberView : View {
     var borderColor: Int = Color.WHITE
         set(value) {
             field = value
+            borderPaint.color = value
             invalidate()
         }
 
     var tipSize: Float = sp2px(context, 16.0f)
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
 
     var dotSize: Float = dp2px(context, 3.0f)
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
 
     var borderWidth: Float = dp2px(context, 2.0f)
@@ -68,35 +70,37 @@ class NumberView : View {
             invalidate()
         }
 
-    var leftRightMargin: Float = tipSize * 1.0f / 20
+    var lrMargin: Float = 0.0f
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
 
-    var topBtmMargin: Float = tipSize * 1.0f / 20
+    var tbMargin: Float = tipSize * 1.0f / 20
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
 
     var number: String = ""
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
 
     internal var mode: TipMode = TipMode.MODE_NUM
         set(value) {
             field = value
-            invalidate()
+            requestLayout()
         }
+
     var borderEnable: Boolean = false
         set(value) {
             field = value
             invalidate()
         }
-    var backupEnable: Boolean = true
+
+    var bgEnable: Boolean = true
         set(value) {
             field = value
             invalidate()
@@ -154,7 +158,7 @@ class NumberView : View {
                     canvas.drawCircle(itemWidth / 2.toFloat(), itemHeight / 2.toFloat(), itemWidth / 2.toFloat(), borderPaint)
                 }
                 //是否绘制背景
-                if (backupEnable) {
+                if (bgEnable) {
                     canvas.drawCircle(centerX, centerY, width / 2, bgPaint)
                 }
 
@@ -163,22 +167,24 @@ class NumberView : View {
                 canvas.drawText(number, centerX, (itemHeight / 2 + rect.height() / 2).toFloat(), textPaint)
 
             } else {
-                val height: Float = if (borderEnable) itemHeight - borderWidth * 2 else itemHeight.toFloat()
+                val height: Float = if (borderEnable) itemHeight - (borderWidth + 0.5f) * 2 else itemHeight.toFloat()
+                val offset = Math.min(itemHeight / 2 - lrMargin, textWidth.toFloat() / 2)
+
                 //是否绘制边框
                 if (borderEnable) {
                     val rect = Rect()
-                    rect.set(itemWidth / 2 - textWidth / 2, 0, itemWidth / 2 + textWidth / 2, itemHeight)
+                    rect.set(itemWidth / 2 - textWidth / 2 + offset.toInt(), 0, itemWidth / 2 + textWidth / 2 - offset.toInt(), itemHeight)
                     canvas.drawRect(rect, borderPaint)
-                    canvas.drawCircle((itemWidth / 2 - textWidth / 2).toFloat(), itemHeight / 2.toFloat(), itemHeight / 2.toFloat(), borderPaint)
-                    canvas.drawCircle((itemWidth / 2 + textWidth / 2).toFloat(), itemHeight / 2.toFloat(), itemHeight / 2.toFloat(), borderPaint)
+                    canvas.drawCircle(itemWidth / 2 - textWidth / 2 + offset, itemHeight / 2.toFloat(), itemHeight / 2.toFloat(), borderPaint)
+                    canvas.drawCircle(itemWidth / 2 + textWidth / 2 - offset, itemHeight / 2.toFloat(), itemHeight / 2.toFloat(), borderPaint)
                 }
                 //是否绘制背景
-                if (backupEnable) {
+                if (bgEnable) {
                     val rect = Rect()
-                    rect.set(itemWidth / 2 - textWidth / 2, ((itemHeight - height) / 2).toInt(), itemWidth / 2 + textWidth / 2, itemHeight - ((itemHeight - height) / 2).toInt())
+                    rect.set(itemWidth / 2 - textWidth / 2 + offset.toInt(), ((itemHeight - height) / 2).toInt(), itemWidth / 2 + textWidth / 2 - offset.toInt(), itemHeight - ((itemHeight - height) / 2).toInt())
                     canvas.drawRect(rect, bgPaint)
-                    canvas.drawCircle((itemWidth / 2 - textWidth / 2).toFloat(), itemHeight / 2.toFloat(), height / 2.toFloat(), bgPaint)
-                    canvas.drawCircle((itemWidth / 2 + textWidth / 2).toFloat(), itemHeight / 2.toFloat(), height / 2.toFloat(), bgPaint)
+                    canvas.drawCircle(itemWidth / 2 - textWidth / 2 + offset, itemHeight / 2.toFloat(), height / 2.toFloat(), bgPaint)
+                    canvas.drawCircle(itemWidth / 2 + textWidth / 2 - offset, itemHeight / 2.toFloat(), height / 2.toFloat(), bgPaint)
                 }
 
                 textPaint.textSize = tipSize
@@ -223,18 +229,20 @@ class NumberView : View {
                 textWidth = var1.width()
                 textHeight = var1.height()
 
-                if (!borderEnable && !backupEnable) {
+                if (!borderEnable && !bgEnable) {
                     itemWidth = textWidth
                     itemHeight = textHeight
                     return
                 }
 
                 if (number == MAX_NUM) {
-                    itemHeight = (Math.max(var1.height(), var2.width()) + topBtmMargin * 2).toInt()
-                    itemWidth = var1.width() + itemHeight
+                    if (lrMargin <= 0.0f) lrMargin = itemHeight.toFloat() / 3
+                    val offset = Math.min(itemHeight / 2 - lrMargin, textWidth.toFloat() / 2)
+                    itemHeight = (Math.max(var1.height(), var2.width()) + tbMargin * 2 + 0.5f).toInt()
+                    itemWidth = (var1.width() + itemHeight - offset * 2 + 0.5f).toInt()
                 } else {
-                    itemWidth = (Math.max(var1.width(), var1.height()) + leftRightMargin * 2).toInt()
-                    itemHeight = (Math.max(var1.width(), var1.height()) + topBtmMargin * 2).toInt()
+                    itemWidth = (Math.max(var2.width(), var2.height()) + tbMargin * 2 + 0.5f).toInt()
+                    itemHeight = (Math.max(var2.width(), var2.height()) + tbMargin * 2 + 0.5f).toInt()
                 }
             }
         }

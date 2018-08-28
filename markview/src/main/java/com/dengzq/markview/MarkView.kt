@@ -1,9 +1,13 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package com.dengzq.markview
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.support.annotation.ColorRes
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -12,18 +16,30 @@ import android.widget.TextView
  * <p>author    dengzq</P>
  * <p>date      2018/8/22 下午3:58</p>
  * <p>package   com.dengzq.markview</p>
- * <p>readMe    TicketView</p>
+ * <p>readMe    MarkView</p>
  */
-class MarkView : FrameLayout {
-
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet)
-    constructor(context: Context, attributeSet: AttributeSet, defStyleAttr: Int) : super(context, attributeSet, defStyleAttr)
+class MarkView @JvmOverloads constructor(context: Context, attributeSet: AttributeSet? = null, defStyleAttr: Int = 0)
+    : FrameLayout(context, attributeSet, defStyleAttr) {
 
     private val textView: TextView = TextView(context)
     private val imageView: ImageView = ImageView(context)
     private val numberView: NumberView = NumberView(context)
 
+    var contentTextSize: Float = 14.0f
+        set(value) {
+            field = value
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+            invalidate()
+        }
+
+    @ColorRes
+    var contentTextColor: Int = Color.DKGRAY
+        set(value) {
+            field = value
+            textView.setTextColor(value)
+        }
+
+    //Display mode of mark view;
     var mode: Display = Display.MODE_IMG_DOT
         set(value) {
             field = value
@@ -31,10 +47,10 @@ class MarkView : FrameLayout {
             invalidate()
         }
 
-    var text: CharSequence = ""
+    var contentText: CharSequence = ""
         set(value) {
             field = value
-            textView.text = text
+            textView.text = field
         }
 
     @ColorRes
@@ -44,11 +60,11 @@ class MarkView : FrameLayout {
             textView.setTextColor(field)
         }
 
-    var image: Int? = null
+    var contentImg: Drawable? = null
         set(value) {
             field = value
             field?.let {
-                imageView.setImageResource(it)
+                imageView.setImageDrawable(it)
             }
         }
 
@@ -71,7 +87,7 @@ class MarkView : FrameLayout {
             invalidate()
         }
 
-    var number: String = ""
+    var tipNumber: String = ""
         set(value) {
             field = value
             numberView.number = field
@@ -85,7 +101,7 @@ class MarkView : FrameLayout {
             invalidate()
         }
 
-    var tipColor: Int = Color.WHITE
+    var tipTextColor: Int = Color.WHITE
         set(value) {
             field = value
             numberView.textColor = field
@@ -99,45 +115,45 @@ class MarkView : FrameLayout {
             invalidate()
         }
 
-    var tipBorderColor: Int = Color.WHITE
+    var tipStrokeColor: Int = Color.WHITE
         set(value) {
             field = value
-            numberView.borderColor = tipBorderColor
+            numberView.borderColor = field
             invalidate()
         }
 
-    var boderWidth: Float = dp2px(context, 1.0f)
+    var tipStrokeWidth: Float = dp2px(context, 1.0f)
         set(value) {
             field = value
             numberView.borderWidth = field
             invalidate()
         }
 
-    var tipLeftRightMargin: Float = numberView.leftRightMargin
+    var tipLrMargin: Float = numberView.lrMargin
         set(value) {
             field = value
-            numberView.leftRightMargin
+            numberView.lrMargin = field
             invalidate()
         }
 
-    var tipTopBomMargin: Float = numberView.topBtmMargin
+    var tipTbMargin: Float = numberView.tbMargin
         set(value) {
             field = value
-            numberView.topBtmMargin = field
+            numberView.tbMargin = field
             invalidate()
         }
 
-    var tipBorderEnable = numberView.borderEnable
+    var tipStrokeEnable = numberView.borderEnable
         set(value) {
             field = value
             numberView.borderEnable = field
             invalidate()
         }
 
-    var tipBgEnable = numberView.backupEnable
+    var tipBgEnable = numberView.bgEnable
         set(value) {
             field = value
-            numberView.backupEnable = field
+            numberView.bgEnable = field
             invalidate()
         }
 
@@ -147,6 +163,39 @@ class MarkView : FrameLayout {
             numberView.emptyVisible = field
             invalidate()
         }
+
+    init {
+        val typeArray = context.obtainStyledAttributes(attributeSet, R.styleable.MarkView)
+        tipSize = typeArray.getDimension(R.styleable.MarkView_tipSize, dp2px(context, 16.0f))
+        dotSize = typeArray.getDimension(R.styleable.MarkView_dotSize, dp2px(context, 3.0f))
+        tipTextColor = typeArray.getColor(R.styleable.MarkView_tipTextColor, Color.WHITE)
+        tipBgColor = typeArray.getColor(R.styleable.MarkView_tipBgColor, Color.RED)
+        tipStrokeColor = typeArray.getColor(R.styleable.MarkView_tipStrokeColor, Color.WHITE)
+        tipStrokeWidth = typeArray.getDimension(R.styleable.MarkView_tipStrokeWidth, dp2px(context, 1.0f))
+        contentTextSize = typeArray.getDimensionPixelOffset(R.styleable.MarkView_contentTextSize, 20).toFloat()
+        contentTextColor = typeArray.getColor(R.styleable.MarkView_contentTextColor, Color.DKGRAY)
+        contentText = typeArray.getText(R.styleable.MarkView_contentText) ?: ""
+        contentImg = typeArray.getDrawable(R.styleable.MarkView_contentImg)
+        tipNumber = typeArray.getString(R.styleable.MarkView_tipNumber) ?: ""
+        tipBgEnable = typeArray.getBoolean(R.styleable.MarkView_tipBgEnable, true)
+        tipStrokeEnable = typeArray.getBoolean(R.styleable.MarkView_tipStrokeEnable, false)
+        emptyVisible = typeArray.getBoolean(R.styleable.MarkView_emptyVisible, false)
+        xOffset = typeArray.getDimension(R.styleable.MarkView_xOffset, 0.0f).toInt()
+        yOffset = typeArray.getDimension(R.styleable.MarkView_yOffset, 0.0f).toInt()
+        tipLrMargin = typeArray.getDimension(R.styleable.MarkView_tipLrMargin, tipLrMargin)
+        tipTbMargin = typeArray.getDimension(R.styleable.MarkView_tipTbMargin, tipTbMargin)
+        val markMode = typeArray.getInt(R.styleable.MarkView_markMode, 0)
+        when (markMode) {
+            0 -> mode = Display.MODE_DEFAULT
+            1 -> mode = Display.MODE_TEXT_NON
+            2 -> mode = Display.MODE_TEXT_DOT
+            3 -> mode = Display.MODE_TEXT_NUM
+            4 -> mode = Display.MODE_IMG_NON
+            5 -> mode = Display.MODE_IMG_DOT
+            6 -> mode = Display.MODE_IMG_NUM
+        }
+        typeArray.recycle()
+    }
 
     fun getContentTextView(): TextView? {
         for (i in 0..childCount) {
@@ -164,8 +213,8 @@ class MarkView : FrameLayout {
         return null
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, l, t, r, b)
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         notifyLayout()
     }
 
@@ -200,7 +249,7 @@ class MarkView : FrameLayout {
 
         numberView.mode = TipMode.MODE_DOT
         val var1 = numberView.layoutParams as FrameLayout.LayoutParams
-        var1.leftMargin = textView.measuredWidth + (textView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
+        var1.marginStart = textView.measuredWidth + (textView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
         numberView.layoutParams = var1
 
         val var2 = textView.layoutParams as FrameLayout.LayoutParams
@@ -215,7 +264,7 @@ class MarkView : FrameLayout {
 
         numberView.mode = TipMode.MODE_NUM
         val var1 = numberView.layoutParams as FrameLayout.LayoutParams
-        var1.leftMargin = textView.measuredWidth + (textView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
+        var1.marginStart = textView.measuredWidth + (textView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
         numberView.layoutParams = var1
 
         val var2 = textView.layoutParams as FrameLayout.LayoutParams
@@ -230,7 +279,7 @@ class MarkView : FrameLayout {
 
         numberView.mode = TipMode.MODE_DOT
         val var1 = numberView.layoutParams as FrameLayout.LayoutParams
-        var1.leftMargin = imageView.measuredWidth + (imageView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
+        var1.marginStart = imageView.measuredWidth + (imageView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
         numberView.layoutParams = var1
 
         val var2 = imageView.layoutParams as FrameLayout.LayoutParams
@@ -245,7 +294,7 @@ class MarkView : FrameLayout {
 
         numberView.mode = TipMode.MODE_NUM
         val var1 = numberView.layoutParams as FrameLayout.LayoutParams
-        var1.leftMargin = imageView.measuredWidth + (imageView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
+        var1.marginStart = imageView.measuredWidth + (imageView.layoutParams as FrameLayout.LayoutParams).leftMargin + xOffset
         numberView.layoutParams = var1
 
         val var2 = imageView.layoutParams as FrameLayout.LayoutParams
